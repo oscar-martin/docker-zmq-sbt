@@ -1,13 +1,11 @@
 FROM oscarmartin/zmqbase
 MAINTAINER oscarmartinvicente@gmail.com
 
-# Install DEB packages where to find sbt
+# Install 
 RUN apt-get update && apt-get install -y apt-transport-https \
-    && echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list \
-    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823
-
-# Install needed packages
-RUN apt-get update && apt-get install -y --fix-missing \
+    && echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list \
+    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823 \
+    && apt-get update && apt-get install -y --fix-missing \
     openjdk-7-jre-headless \
     openjdk-7-jdk \
     libtool \
@@ -16,26 +14,30 @@ RUN apt-get update && apt-get install -y --fix-missing \
     autoconf \
     automake \
     git \
-    sbt
-
-# Install JZMQ
-RUN mkdir -p /tmp/zeromq
-WORKDIR /tmp/zeromq
-RUN git clone https://github.com/zeromq/jzmq.git \
+    sbt \
+    && ln -s /usr/bin/libtoolize /usr/bin/libtool \
+    && mkdir -p /tmp/zeromq \
+    && cd /tmp/zeromq \
+    && git clone https://github.com/zeromq/jzmq.git \
     && cd jzmq \
     && ./autogen.sh \
     && ./configure \
     && make \
-    && sudo make install
-
-# Clean up
-RUN rm -rf /tmp/zeromq
-RUN apt-get purge -y libtool \
+    && make install \
+    && rm -rf /tmp/zeromq \
+    && apt-get purge -y libtool \
     pkg-config \
     build-essential \
+    git \
     autoconf \
-    automake
-RUN apt-get clean && apt-get autoclean && apt-get -y autoremove
+    automake \
+    locales \
+    manpages \
+    manpages-dev \
+    perl \
+    gcc \
+    python \
+    && apt-get clean && apt-get autoclean && apt-get -y autoremove
 
 VOLUME /project
 WORKDIR /project
